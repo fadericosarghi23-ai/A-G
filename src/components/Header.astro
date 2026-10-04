@@ -1,0 +1,467 @@
+---
+/**
+ * Header — barra fissa con dock magnificato (stile macOS) e menu mobile a tutto schermo.
+ * Animazioni: scroll → .is-solid, magnificazione dock su mousemove, apertura menu mobile.
+ * Le rotte sono quelle della base; "Servizi" punta a /ambiti/.
+ */
+import GetStartedButton from './GetStartedButton.astro';
+
+interface Props {
+  theme?: 'over' | 'light';
+}
+const { theme = "light" } = Astro.props;
+const path = Astro.url.pathname;
+
+// Voci di navigazione: token corti (stessa lunghezza di una voce reale, così il dock non
+// collassa), greppabili e contati a parte da `npm run slots`. Le rotte sono la struttura base.
+const NAV = [
+  { label: 'Progetti', href: '/progetti/' },
+  { label: 'Servizi', href: '/ambiti/' },
+  { label: 'Metodo', href: '/metodo/' },
+  { label: 'Chi siamo', href: '/studio/' },
+  { label: 'Contatti', href: '/contatti/' },
+];
+
+// Sul mobile il menu è lo stesso del dock.
+const NAV_MOBILE = NAV;
+---
+
+<header class="hdr" data-theme={theme} data-nav>
+  <div class="hdr__inner container">
+    <a class="brand" href="/" aria-label="A+G Architettura, home">
+      <img class="brand__logo" src="/brand/logo.svg" width="2147" height="166" alt="" />
+    </a>
+
+    <!-- macOS-style magnification dock (section labels) -->
+    <nav class="dock" aria-label="Principale" data-dock>
+      {NAV.map((item) => (
+        <a
+          href={item.href}
+          class:list={['dock__item', { 'is-active': path.startsWith(item.href) }]}
+          data-dock-item
+        >{item.label}</a>
+      ))}
+    </nav>
+
+    <div class="hdr__actions">
+      <div class="hdr__cta-wrap">
+        <GetStartedButton size="sm" href="/contatti/" />
+      </div>
+
+      <button class="burger" aria-label="Apri il menu" aria-expanded="false" data-burger>
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Full-screen mobile menu (outside <header> so its backdrop-filter can't clip this fixed panel) -->
+<div class="mobile" data-mobile aria-hidden="true">
+  <div class="mobile__top container">
+    <a class="brand" href="/" aria-label="A+G Architettura, home">
+      <img class="brand__logo" src="/brand/logo.svg" width="2147" height="166" alt="" />
+    </a>
+    <button class="mobile__close" data-close aria-label="Chiudi il menu">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+    </button>
+  </div>
+
+  <nav class="mobile__nav container" aria-label="Menu mobile">
+    {NAV_MOBILE.map((item, i) => (
+      <a href={item.href} style={`--i:${i}`} class:list={['mobile__link', { 'is-active': path.startsWith(item.href) }]}>
+        <span class="mobile__num">{String(i + 1).padStart(2, '0')}</span>
+        <span>{item.label}</span>
+      </a>
+    ))}
+  </nav>
+
+  <div class="mobile__foot container">
+    <GetStartedButton size="md" href="/contatti/" class="mobile__cta" />
+    <div class="mobile__contacts">
+      <a class="mobile__phone" href="tel:+393289063208">+39 328 9063208</a>
+      <a class="mobile__ig" href="https://www.instagram.com/ag_architettura" target="_blank" rel="noopener">@ag_architettura &#8599;</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Animazioni header: sfondo al superamento dei 40px, magnificazione del dock,
+  // apertura/chiusura del menu mobile. Codice invariato rispetto al sito di partenza.
+  const a=document.querySelector("[data-nav]"),d=()=>{a&&a.classList.toggle("is-solid",window.scrollY>40)};d();window.addEventListener("scroll",d,{passive:!0});const s=document.querySelector("[data-dock]");if(s){const e=Array.from(s.querySelectorAll("[data-dock-item]")),u=1.34,m=95;if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){let n=!1;s.addEventListener("mousemove",c=>{const f=c.clientX;n||(n=!0,requestAnimationFrame(()=>{for(const r of e){const i=r.getBoundingClientRect(),y=i.left+i.width/2,v=Math.max(0,1-Math.abs(f-y)/m);r.style.setProperty("--s",(1+(u-1)*v).toFixed(3))}n=!1}))}),s.addEventListener("mouseleave",()=>{for(const c of e)c.style.setProperty("--s","1")})}}const l=document.querySelector("[data-burger]"),t=document.querySelector("[data-mobile]"),g=t?.querySelector("[data-close]"),o=e=>{l?.setAttribute("aria-expanded",String(e)),t?.classList.toggle("is-open",e),t?.setAttribute("aria-hidden",String(!e)),document.body.style.overflow=e?"hidden":""};l?.addEventListener("click",()=>o(!t?.classList.contains("is-open")));g?.addEventListener("click",()=>o(!1));t?.querySelectorAll("a").forEach(e=>e.addEventListener("click",()=>o(!1)));document.addEventListener("keydown",e=>{e.key==="Escape"&&t?.classList.contains("is-open")&&o(!1)});
+</script>
+
+<style>
+.hdr {
+  position:fixed;
+  inset:0 0 auto;
+  z-index:100;
+  height:var(--header-h);
+  transition:background .4s var(--ease),border-color .4s var(--ease),color .4s var(--ease);
+  border-bottom:1px solid transparent;
+  --fg: var(--ink);
+  color:var(--fg)
+}
+
+.hdr__inner {
+  position:relative;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1.5rem
+}
+
+.hdr[data-theme=light] {
+  background:color-mix(in srgb,var(--bg) 55%,transparent);
+  backdrop-filter:blur(14px) saturate(1.1);
+  border-bottom-color:#2222220f
+}
+
+.hdr[data-theme=over] {
+  --fg: var(--on-dark)
+}
+
+.hdr[data-theme=over].is-solid {
+  background:color-mix(in srgb,var(--bg) 50%,transparent);
+  backdrop-filter:blur(16px) saturate(1.1);
+  border-bottom-color:#2222220f;
+  --fg: var(--ink)
+}
+
+.hdr.menu-open {
+  background:color-mix(in srgb,var(--bg) 98%,transparent);
+  backdrop-filter:blur(14px);
+  border-bottom-color:var(--line);
+  --fg: var(--ink)
+}
+
+.brand {
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  position:relative;
+  z-index:2
+}
+
+.brand__mark {
+  display:block
+}
+
+/* Logo A+G (SVG ricalcato dal PNG del cliente): stessa impronta del marchio + scritta della base */
+.brand__logo {
+  display:block;
+  height:14px;
+  width:auto
+}
+
+@media(min-width:1200px) {
+  .brand__logo {
+    height:16px
+  }
+}
+
+.brand__word {
+  font-family:var(--font-body);
+  font-weight:500;
+  font-size:.98rem;
+  letter-spacing:.08em;
+  color:var(--fg);
+  display:inline-flex;
+  align-items:center;
+  white-space:nowrap
+}
+
+.brand__dot {
+  width:.36rem;
+  height:.36rem;
+  border-radius:50%;
+  background:var(--accent);
+  margin-inline:.55rem;
+  flex:none
+}
+
+.brand__thin {
+  font-weight:300;
+  letter-spacing:.12em;
+  text-transform:lowercase;
+  opacity:.8
+}
+
+.dock {
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  display:flex;
+  align-items:center;
+  gap:.15rem;
+  height:46px;
+  padding:0 .45rem;
+  background:#ffffffb3;
+  backdrop-filter:blur(14px) saturate(1.2);
+  border:1px solid rgba(23,25,26,.08);
+  border-radius:999px;
+  box-shadow:0 12px 34px -14px #1111114d,inset 0 1px #ffffff80
+}
+
+.dock__item {
+  --s: 1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.82rem;
+  font-weight:500;
+  letter-spacing:.01em;
+  line-height:1;
+  color:var(--ink);
+  opacity:.72;
+  white-space:nowrap;
+  padding:.5rem clamp(.65rem,.8vw,.95rem);
+  border-radius:999px;
+  transform:scale(var(--s));
+  transform-origin:center center;
+  margin-inline:calc((var(--s) - 1) * 13px);
+  transition:transform .16s ease-out,margin .16s ease-out,opacity .25s var(--ease),color .25s var(--ease),background .25s var(--ease)
+}
+
+.dock__item:hover {
+  opacity:1;
+  color:var(--accent);
+  background:var(--accent-soft)
+}
+
+.dock__item.is-active {
+  opacity:1;
+  color:var(--accent)
+}
+
+.hdr__actions {
+  display:flex;
+  align-items:center;
+  gap:1.1rem;
+  position:relative;
+  z-index:2
+}
+
+.burger {
+  display:none;
+  width:40px;
+  height:40px;
+  background:transparent;
+  border:0;
+  position:relative
+}
+
+.burger span {
+  position:absolute;
+  left:9px;
+  right:9px;
+  height:1.5px;
+  background:var(--fg);
+  transition:transform .35s var(--ease),opacity .35s var(--ease)
+}
+
+.burger span:nth-child(1) {
+  top:16px
+}
+
+.burger span:nth-child(2) {
+  top:23px
+}
+
+.burger[aria-expanded=true] span:nth-child(1) {
+  transform:translateY(3.5px) rotate(45deg)
+}
+
+.burger[aria-expanded=true] span:nth-child(2) {
+  transform:translateY(-3.5px) rotate(-45deg)
+}
+
+.mobile {
+  position:fixed;
+  inset:0;
+  z-index:200;
+  background:var(--dark);
+  color:var(--on-dark);
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+  transform:translate(100%);
+  visibility:hidden;
+  transition:transform .55s cubic-bezier(.16,1,.3,1),visibility .55s
+}
+
+.mobile.is-open {
+  transform:translate(0);
+  visibility:visible
+}
+
+.mobile:before {
+  content:"";
+  position:absolute;
+  top:-12%;
+  right:-25%;
+  width:80%;
+  height:55%;
+  background:radial-gradient(circle,rgba(var(--glow-rgb),.45),transparent 68%);
+  pointer-events:none
+}
+
+.mobile__top {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  height:var(--header-h);
+  flex:none;
+  position:relative;
+  z-index:1
+}
+
+.mobile__top .brand__word {
+  color:var(--on-dark)
+}
+
+.mobile__close {
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  background:transparent;
+  border:1px solid rgba(244,242,238,.25);
+  color:var(--on-dark);
+  border-radius:999px;
+  transition:background .3s var(--ease),color .3s var(--ease)
+}
+
+.mobile__close:hover {
+  background:var(--on-dark);
+  color:var(--dark)
+}
+
+.mobile__nav {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:.1rem;
+  position:relative;
+  z-index:1
+}
+
+.mobile__link {
+  display:flex;
+  align-items:baseline;
+  gap:1rem;
+  font-family:var(--font-display);
+  font-size:clamp(2.1rem,11vw,3rem);
+  font-weight:500;
+  letter-spacing:-.02em;
+  color:var(--on-dark);
+  padding-block:.8rem;
+  border-bottom:1px solid rgba(244,242,238,.12);
+  transform:translate(45px);
+  opacity:0;
+  transition:transform .6s var(--ease),opacity .6s var(--ease),color .3s var(--ease)
+}
+
+.mobile.is-open .mobile__link {
+  transform:none;
+  opacity:1;
+  transition-delay:calc(var(--i) * .06s + .12s)
+}
+
+.mobile__link.is-active,
+.mobile__link:hover {
+  color:var(--accent-on-dark)
+}
+
+.mobile__num {
+  font-family:var(--font-body);
+  font-size:.8rem;
+  font-weight:600;
+  color:var(--accent);
+  letter-spacing:.06em
+}
+
+.mobile__link.is-active .mobile__num,
+.mobile__link:hover .mobile__num {
+  color:var(--accent-on-dark)
+}
+
+.mobile__foot {
+  flex:none;
+  padding-top:1.5rem;
+  padding-bottom:2.5rem;
+  display:flex;
+  flex-direction:column;
+  gap:1.2rem;
+  position:relative;
+  z-index:1;
+  transform:translateY(24px);
+  opacity:0;
+  transition:transform .6s var(--ease),opacity .6s var(--ease)
+}
+
+.mobile.is-open .mobile__foot {
+  transform:none;
+  opacity:1;
+  transition-delay:.5s
+}
+
+.mobile__cta {
+  display:flex;
+  width:100%
+}
+
+.mobile__contacts {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:1rem
+}
+
+.mobile__phone {
+  font-family:var(--font-display);
+  font-size:1.4rem;
+  font-weight:500;
+  color:var(--accent-on-dark)
+}
+
+.mobile__ig {
+  font-size:.9rem;
+  font-weight:500;
+  color:var(--on-dark-muted)
+}
+
+.mobile__ig:hover {
+  color:var(--on-dark)
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .mobile,.mobile__link,.mobile__foot {
+    transition:opacity .2s
+  }
+  .mobile__link,.mobile__foot {
+    transform:none
+  }
+}
+
+.hdr__cta-wrap {
+  display:flex
+}
+
+@media(max-width:900px) {
+  .dock,.hdr__cta-wrap {
+    display:none
+  }
+  .burger {
+    display:block
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .dock__item {
+    transition:opacity .25s,color .25s,background .25s
+  }
+}
+</style>

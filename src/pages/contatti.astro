@@ -1,0 +1,357 @@
+---
+/**
+ * Contatti — form di richiesta preventivo + schede recapiti.
+ *
+ * Invio del form:
+ * - data-endpoint="" → nessun backend collegato ancora (Formspree, Resend, Netlify Forms…).
+ * - FALLBACK_EMAIL = 'info@ag-architettura.it' → finché manca l'endpoint, il modulo apre il client
+ *   di posta con la richiesta già compilata, indirizzata allo studio.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GetStartedButton from '../components/GetStartedButton.astro';
+import { daRendere } from '../lib/testo';
+
+// Orari: il sito attuale non li pubblica (in produzione la riga non viene resa).
+const orari = '[[DA COMPILARE: orari o modalità di ricevimento]]';
+
+// Opzioni del form: tipi di intervento e tempistiche, da adattare ai servizi del cliente.
+// I primi quattro sono i servizi dello studio, con i nomi del sito attuale.
+const INTERVENTI = [
+  'Mini call gratuita',
+  'Chiedi ad A+G',
+  'La stanza che vorrei',
+  'Casa senza pensieri',
+  'Locale o attività commerciale',
+  'Altro',
+];
+
+// [[DA VALIDARE: tempistiche e testo del consenso scritti da noi]]
+const TEMPISTICHE = [
+  'Il prima possibile',
+  'Entro 3 mesi',
+  'Entro 6 mesi',
+  'Sto ancora valutando',
+];
+---
+
+<BaseLayout
+  title="Contatti · A+G Architettura, Biella e Vercelli"
+  description="Scrivi ad A+G Architettura: info@ag-architettura.it, Angela +39 328 9063208 (Biella), Ghena +39 339 8838558 (Vercelli). Inizia con la mini call gratuita."
+>
+  <main id="main">
+    <section class="cthead section">
+      <div class="container">
+        <p class="eyebrow" data-reveal>Contattaci</p>
+        <h1 class="display cthead__title" data-reveal>Parliamo<br />della tua casa</h1>
+        <p class="lead cthead__lead" data-reveal>
+          Lo studio è operativo in entrambe le sedi di Biella e Vercelli. Le distanze non ci spaventano, contattateci e capiremo come raggiungervi!
+        </p>
+      </div>
+    </section>
+
+    <section class="section ctmain section--tint">
+      <div class="container ctmain__grid">
+        <div class="ctform">
+          <!-- data-endpoint vuoto: nessun invio. Inserire qui l'endpoint del cliente quando si ricollega il modulo. -->
+          <form id="quote" data-endpoint="" novalidate data-stagger>
+            <div class="field">
+              <label for="name">Nome e cognome *</label>
+              <input id="name" name="name" type="text" required autocomplete="name" />
+            </div>
+
+            <div class="frow">
+              <div class="field">
+                <label for="email">Email *</label>
+                <input id="email" name="email" type="email" required autocomplete="email" />
+              </div>
+              <div class="field">
+                <label for="phone">Telefono</label>
+                <input id="phone" name="phone" type="tel" autocomplete="tel" />
+              </div>
+            </div>
+
+            <div class="frow">
+              <div class="field">
+                <label for="intervento">Tipo di intervento *</label>
+                <select id="intervento" name="intervento" required>
+                  <option value="" selected disabled>Seleziona&hellip;</option>
+                  {INTERVENTI.map((o) => <option>{o}</option>)}
+                </select>
+              </div>
+              <div class="field">
+                <label for="citta">Città dell'immobile</label>
+                <input id="citta" name="citta" type="text" placeholder="Es. città" />
+              </div>
+            </div>
+
+            <div class="frow">
+              <div class="field">
+                <label for="superficie">Superficie indicativa</label>
+                <input id="superficie" name="superficie" type="text" placeholder="Es. 90 mq" />
+              </div>
+              <div class="field">
+                <label for="tempistica">Tempistica</label>
+                <select id="tempistica" name="tempistica">
+                  <option value="" selected disabled>Seleziona&hellip;</option>
+                  {TEMPISTICHE.map((o) => <option>{o}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="msg">Il tuo progetto</label>
+              <textarea id="msg" name="messaggio" rows="4" placeholder="Raccontaci in breve cosa vorresti fare…"></textarea>
+            </div>
+
+            <label class="check">
+              <input type="checkbox" name="privacy" required />
+              <span>Ho letto l'informativa privacy e acconsento al trattamento dei miei dati per essere ricontattato *</span>
+            </label>
+            <GetStartedButton label="Invia la richiesta" type="submit" class="ctform__submit" />
+            <p class="ctform__status" data-status role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <aside class="ctside">
+          <div class="ctcard" data-reveal>
+            <p class="ctcard__label">A · Arch. Angela Culletta · Biella</p>
+            <a class="ctcard__phone" href="tel:+393289063208">+39 328 9063208</a>
+            <a class="btn btn--accent ctcard__wa" href="tel:+393398838558">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.02h-.01a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.11.82.83-3.03-.2-.31a8.22 8.22 0 0 1-1.26-4.37c0-4.54 3.7-8.23 8.24-8.23 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.82c0 4.54-3.69 8.24-8.23 8.24Zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.25 3.74.59.26 1.05.41 1.42.52.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.11-.22-.17-.47-.29Z"></path></svg>
+              G · Ghena, Vercelli · +39 339 8838558
+            </a>
+            <div class="ctcard__mails">
+              <a class="tlink" href="mailto:info@ag-architettura.it">info@ag-architettura.it</a>
+            </div>
+          </div>
+
+          <div class="ctcard" data-reveal>
+            <p class="ctcard__label">Le sedi</p>
+            {/* [[DA COMPILARE: indirizzi civici delle due sedi — il sito attuale indica solo le città]] */}
+            <p class="ctcard__addr">Biella · Vercelli<br />In tutto il Piemonte</p>
+            {daRendere(orari) && <p class="muted ctcard__hours">{orari}</p>}
+            <a class="tlink" href="https://www.instagram.com/ag_architettura" target="_blank" rel="noopener">Seguici su Instagram &#8599;</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  // Invio del form. Struttura invariata rispetto al sito di partenza, con una differenza:
+  // finché data-endpoint è vuoto E FALLBACK_EMAIL è vuota, il modulo non spedisce nulla
+  // e avvisa a schermo. Compilare entrambi per riattivarlo.
+  (function () {
+    const FALLBACK_EMAIL = 'info@ag-architettura.it';
+
+    const form = document.getElementById('quote');
+    const status = form?.querySelector('[data-status]');
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      const data = Object.fromEntries(new FormData(form).entries());
+      const endpoint = form.getAttribute('data-endpoint');
+      status.className = 'ctform__status';
+      status.textContent = 'Invio in corso…';
+      if (endpoint) {
+        try {
+          const r = await fetch(endpoint, { method: 'POST', headers: { Accept: 'application/json' }, body: new FormData(form) });
+          if (r.ok) { form.reset(); status.className = 'ctform__status ok'; status.textContent = 'Grazie, abbiamo ricevuto la tua richiesta: ti ricontattiamo a breve.'; }
+          else throw new Error('bad');
+        } catch { status.className = 'ctform__status err'; status.textContent = 'Qualcosa è andato storto. Chiamaci o scrivici via email.'; }
+      } else if (FALLBACK_EMAIL) {
+        // Fallback senza backend: apre il client di posta con i dati precompilati.
+        const body = `Nome: ${data.name || ''}%0D%0AEmail: ${data.email || ''}%0D%0ATelefono: ${data.phone || ''}%0D%0AIntervento: ${data.intervento || ''}%0D%0ACittà: ${data.citta || ''}%0D%0ASuperficie: ${data.superficie || ''}%0D%0ATempistica: ${data.tempistica || ''}%0D%0A%0D%0A${(data.messaggio || '').replace(/\n/g, '%0D%0A')}`;
+        window.location.href = `mailto:${FALLBACK_EMAIL}?subject=${encodeURIComponent('Richiesta preventivo dal sito')}&body=${body}`;
+        status.className = 'ctform__status ok';
+        status.textContent = 'Si apre il tuo programma di posta con la richiesta già compilata.';
+      } else {
+        status.className = 'ctform__status err';
+        status.textContent = 'Il modulo non è ancora collegato a un endpoint. Configurare data-endpoint (o FALLBACK_EMAIL) per attivarlo.';
+      }
+    });
+  })();
+</script>
+
+<style>
+.cthead {
+  padding-top:calc(var(--header-h) + clamp(2.5rem,6vw,5rem));
+  padding-bottom:0
+}
+
+.cthead__title {
+  margin:1rem 0 1.4rem
+}
+
+.cthead__lead {
+  max-width:42rem
+}
+
+.ctmain__grid {
+  display:grid;
+  grid-template-columns:1.4fr .6fr;
+  gap:clamp(2.5rem,5vw,4.5rem);
+  align-items:start
+}
+
+.field {
+  display:flex;
+  flex-direction:column;
+  gap:.45rem;
+  margin-bottom:1.1rem
+}
+
+.frow {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1.1rem
+}
+
+label {
+  font-size:.8rem;
+  font-weight:600;
+  letter-spacing:.04em;
+  color:var(--ink)
+}
+
+input,
+select,
+textarea {
+  font:inherit;
+  font-size:.95rem;
+  padding:.8rem .9rem;
+  background:var(--surface);
+  border:1px solid var(--line-strong);
+  color:var(--ink);
+  border-radius:0;
+  width:100%;
+  transition:border-color .25s var(--ease)
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline:none;
+  border-color:var(--accent)
+}
+
+textarea {
+  resize:vertical
+}
+
+.check {
+  display:flex;
+  gap:.6rem;
+  align-items:flex-start;
+  margin:.4rem 0 1.5rem;
+  font-weight:400
+}
+
+.check input {
+  width:auto;
+  margin-top:.2rem;
+  accent-color:var(--accent)
+}
+
+.check span {
+  font-size:.85rem;
+  color:var(--muted)
+}
+
+.ctform__submit {
+  display:flex;
+  width:100%
+}
+
+.ctform__status {
+  margin-top:1rem;
+  font-size:.9rem;
+  min-height:1.2em
+}
+
+.ctform__status.ok {
+  color:var(--accent-deep)
+}
+
+.ctform__status.err {
+  color:#b3261e
+}
+
+.ctside {
+  display:flex;
+  flex-direction:column;
+  gap:1.5rem;
+  position:sticky;
+  top:calc(var(--header-h) + 1.5rem)
+}
+
+.ctcard {
+  border:1px solid var(--line);
+  padding:1.6rem;
+  background:var(--surface)
+}
+
+.ctcard__label {
+  font-size:.74rem;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin:0 0 .9rem
+}
+
+.ctcard__phone {
+  display:block;
+  font-family:var(--font-display);
+  font-size:1.7rem;
+  font-weight:500;
+  color:var(--ink);
+  letter-spacing:-.02em;
+  margin-bottom:1rem
+}
+
+.ctcard__phone:hover {
+  color:var(--accent)
+}
+
+.ctcard__wa {
+  width:100%;
+  justify-content:center;
+  gap:.5rem
+}
+
+.ctcard__mails {
+  display:flex;
+  flex-direction:column;
+  gap:.5rem;
+  margin-top:1.2rem;
+  font-size:.9rem
+}
+
+.ctcard__addr {
+  font-size:1.05rem;
+  margin:0 0 .8rem;
+  line-height:1.5
+}
+
+.ctcard__hours {
+  font-size:.88rem;
+  margin:0 0 1rem
+}
+
+@media(max-width:900px) {
+  .ctmain__grid {
+    grid-template-columns:1fr
+  }
+  .ctside {
+    position:static
+  }
+}
+
+@media(max-width:520px) {
+  .frow {
+    grid-template-columns:1fr
+  }
+}
+</style>

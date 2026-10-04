@@ -1,0 +1,141 @@
+---
+/**
+ * ProjectCard — scheda della griglia progetti.
+ * data-cat è la chiave usata dai filtri della pagina: non rinominarla.
+ */
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'progetti'>;
+  eager?: boolean;
+}
+const { project, eager = false } = Astro.props;
+const p = project.data;
+---
+
+<a class="card" href={`/progetti/${project.id}/`} data-cat={p.category} data-reveal>
+  <div class="card__media">
+    <Image
+      src={p.cover}
+      alt={`${p.title}, ${p.categoryLabel}${p.location ? ', ' + p.location : ''}`}
+      widths={[500, 800, 1100]}
+      sizes="(min-width: 900px) 45vw, 100vw"
+      loading={eager ? 'eager' : 'lazy'}
+      class="card__img"
+    />
+    <span class="card__go" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17 17 7M9 7h8v8"></path></svg>
+    </span>
+  </div>
+  <div class="card__body">
+    <div class="card__meta">
+      <span>{p.categoryLabel}</span>
+      {p.location && <span>{p.location}</span>}
+      {p.year && <span>{p.year}</span>}
+    </div>
+    <h3 class="card__title">{p.title}</h3>
+    {p.credits && <p class="card__kind muted">{p.credits}</p>}
+  </div>
+</a>
+
+<style>
+.card {
+  display:block;
+  group:card
+}
+
+.card__media {
+  position:relative;
+  overflow:hidden;
+  aspect-ratio:16 / 11;
+  background:var(--line)
+}
+
+.card__img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:transform 1.1s var(--ease)
+}
+
+.card:hover .card__img {
+  transform:scale(1.05)
+}
+
+.card__flag {
+  position:absolute;
+  top:1rem;
+  left:1rem;
+  z-index:2;
+  background:#111111d9;
+  color:var(--on-dark);
+  backdrop-filter:blur(4px);
+  font-size:.68rem;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  padding:.4rem .7rem
+}
+
+.card__go {
+  position:absolute;
+  right:1rem;
+  bottom:1rem;
+  z-index:2;
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  background:var(--surface);
+  color:var(--ink);
+  opacity:0;
+  transform:translateY(8px);
+  transition:opacity .4s var(--ease),transform .4s var(--ease),background .3s,color .3s
+}
+
+.card:hover .card__go {
+  opacity:1;
+  transform:none
+}
+
+.card:hover .card__go {
+  background:var(--accent);
+  color:#fff
+}
+
+.card__body {
+  padding-top:1.15rem
+}
+
+.card__meta {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.8rem;
+  font-size:.72rem;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:.6rem
+}
+
+.card__meta span:not(:last-child):after {
+  content:""
+}
+
+.card__title {
+  font-size:clamp(1.35rem,2.4vw,1.85rem);
+  letter-spacing:-.02em;
+  transition:color .3s var(--ease)
+}
+
+.card:hover .card__title {
+  color:var(--accent)
+}
+
+.card__kind {
+  font-size:.92rem;
+  margin:.3rem 0 0
+}
+</style>

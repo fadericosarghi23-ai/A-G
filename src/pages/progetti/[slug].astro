@@ -1,0 +1,327 @@
+---
+/**
+ * Dettaglio progetto — hero a tutta pagina, descrizione + scheda tecnica,
+ * galleria con reveal a clip e rimando al progetto successivo.
+ * L'attributo data-clip su ogni figure regola l'animazione di ingresso: non rimuoverlo.
+ */
+import { Image } from 'astro:assets';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GetStartedButton from '../../components/GetStartedButton.astro';
+import { daRendere, testoO } from '../../lib/testo';
+
+export async function getStaticPaths() {
+  const projects = (await getCollection('progetti')).sort((a, b) => a.data.order - b.data.order);
+  return projects.map((project, i) => ({
+    params: { slug: project.id },
+    props: { project, next: projects[(i + 1) % projects.length] },
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<'progetti'>;
+  next: CollectionEntry<'progetti'>;
+}
+const { project, next } = Astro.props;
+const p = project.data;
+const catLabel = p.categoryLabel;
+
+// i paragrafi ancora da scrivere non vengono resi in produzione
+const paragrafi = p.body.filter((par) => daRendere(par));
+// se manca la description, se ne compone una fattuale invece di lasciare il segnaposto
+const descrizione = testoO(
+  p.seoDescription,
+  [p.categoryLabel, p.location, p.year].filter(Boolean).join(' · ') +
+    ' — A+G Architettura.'
+);
+---
+
+<BaseLayout title={`${p.title} · A+G Architettura`} description={descrizione} headerTheme="over">
+  <main id="main">
+    <article class="proj">
+      <section class="proj__hero">
+        <Image
+          src={p.hero}
+          alt={`${p.title}${p.location ? ', ' + p.location : ''}`}
+          widths={[900, 1400, 1900]}
+          sizes="100vw"
+          loading="eager"
+          class="proj__heroimg"
+        />
+        <div class="proj__heroscrim"></div>
+        <div class="container proj__herotext">
+          <p class="proj__code" data-reveal>{[catLabel, p.location, p.year].filter(Boolean).join(' · ')}</p>
+          <h1 class="display proj__title" data-reveal>{p.title}</h1>
+        </div>
+      </section>
+
+      <section class="section proj__intro section--tint">
+        <div class="container proj__introgrid">
+          <div class="proj__desc">
+            {paragrafi.map((par) => <p data-reveal>{par}</p>)}
+          </div>
+
+          <aside class="proj__meta" data-reveal>
+            <dl>
+              <div>
+                <dt>Ambito</dt>
+                <dd>{catLabel}</dd>
+              </div>
+              {p.location && (
+                <div>
+                  <dt>Luogo</dt>
+                  <dd>{p.location}</dd>
+                </div>
+              )}
+              {p.year && (
+                <div>
+                  <dt>Anno</dt>
+                  <dd>{p.year}</dd>
+                </div>
+              )}
+              {p.credits && (
+                <div>
+                  <dt>Progetto</dt>
+                  <dd>{p.credits}</dd>
+                </div>
+              )}
+              {p.photoCredit && (
+                <div>
+                  <dt>Foto</dt>
+                  <dd>{p.photoCredit}</dd>
+                </div>
+              )}
+            </dl>
+            <GetStartedButton href="/contatti/" size="sm" label="Parliamo del tuo progetto" class="proj__metacta" />
+          </aside>
+        </div>
+      </section>
+
+      <section class="proj__gallery">
+        <div class="proj__galgrid">
+          {p.gallery.map((img, i) => (
+            <figure class:list={['gitem', { 'gitem--wide': i % 3 === 0 }]} data-clip>
+              <Image
+                src={img}
+                alt={`${p.title}, immagine ${i + 2}`}
+                widths={[500, 900, 1400]}
+                sizes="(min-width: 900px) 60vw, 100vw"
+                loading="lazy"
+                class="gimg"
+              />
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      <section class="proj__next on-dark">
+        <a class="container proj__nextlink" href={`/progetti/${next.id}/`}>
+          <span class="proj__nextlabel">Progetto successivo</span>
+          <span class="proj__nexttitle h-section">{next.data.title} <span class="proj__nextarrow">&#8599;</span></span>
+          <span class="proj__nextmeta muted">
+            {[next.data.categoryLabel, next.data.location, next.data.year].filter(Boolean).join(' · ')}
+          </span>
+        </a>
+      </section>
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+.proj__hero {
+  position:relative;
+  height:82svh;
+  min-height:560px;
+  display:flex;
+  align-items:flex-end;
+  overflow:hidden
+}
+
+.proj__heroimg {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover
+}
+
+.proj__heroscrim {
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(10,20,22,.45) 0%,transparent 40%,rgba(10,20,22,.7) 100%)
+}
+
+.proj__herotext {
+  position:relative;
+  z-index:2;
+  color:#fff;
+  padding-bottom:clamp(2.5rem,6vh,5rem)
+}
+
+.proj__code {
+  font-size:.78rem;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:#f4f2eee0;
+  margin:0 0 1rem
+}
+
+.proj__title {
+  color:#fff
+}
+
+.proj__introgrid {
+  display:grid;
+  grid-template-columns:1.4fr .6fr;
+  gap:clamp(2.5rem,6vw,5rem);
+  align-items:start
+}
+
+.proj__desc p {
+  font-size:clamp(1.05rem,1.5vw,1.22rem);
+  line-height:1.7;
+  margin:0 0 1.3rem
+}
+
+.proj__desc p:first-child {
+  font-size:clamp(1.2rem,2vw,1.5rem);
+  line-height:1.5;
+  color:var(--ink);
+  font-family:var(--font-display);
+  font-weight:400
+}
+
+.proj__meta {
+  position:sticky;
+  top:calc(var(--header-h) + 1.5rem);
+  border-top:2px solid var(--ink);
+  padding-top:1.4rem
+}
+
+.proj__meta dl {
+  margin:0
+}
+
+.proj__meta div {
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  padding:.75rem 0;
+  border-bottom:1px solid var(--line)
+}
+
+.proj__meta dt {
+  color:var(--muted);
+  font-size:.8rem;
+  letter-spacing:.06em;
+  text-transform:uppercase
+}
+
+.proj__meta dd {
+  margin:0;
+  font-weight:500;
+  text-align:right;
+  font-size:.92rem
+}
+
+.proj__metacta {
+  margin-top:1.6rem;
+  display:flex;
+  width:100%
+}
+
+.proj__gallery {
+  padding-bottom:clamp(3rem,7vw,6rem)
+}
+
+.proj__galgrid {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:clamp(.8rem,1.6vw,1.4rem)
+}
+
+.gitem {
+  margin:0;
+  overflow:hidden;
+  background:var(--line)
+}
+
+.gitem--wide {
+  grid-column:1 / -1
+}
+
+.gimg {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block
+}
+
+.gitem:not(.gitem--wide) .gimg {
+  aspect-ratio:4/5
+}
+
+.gitem--wide .gimg {
+  aspect-ratio:16/9
+}
+
+.proj__next {
+  padding:0
+}
+
+.proj__nextlink {
+  display:block;
+  padding-block:clamp(3rem,7vw,5.5rem)
+}
+
+.proj__nextlabel {
+  display:block;
+  font-size:.78rem;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--accent-on-dark);
+  margin-bottom:.8rem
+}
+
+.proj__nexttitle {
+  color:var(--on-dark);
+  display:block;
+  transition:color .3s var(--ease)
+}
+
+.proj__nextlink:hover .proj__nexttitle {
+  color:var(--accent-on-dark)
+}
+
+.proj__nextarrow {
+  display:inline-block;
+  transition:transform .3s var(--ease)
+}
+
+.proj__nextlink:hover .proj__nextarrow {
+  transform:translate(.12em,-.12em)
+}
+
+.proj__nextmeta {
+  display:block;
+  margin-top:.8rem;
+  font-size:.9rem
+}
+
+@media(max-width:900px) {
+  .proj__introgrid {
+    grid-template-columns:1fr
+  }
+  .proj__meta {
+    position:static
+  }
+  .proj__galgrid {
+    grid-template-columns:1fr
+  }
+  .gitem:not(.gitem--wide) .gimg {
+    aspect-ratio:4/3
+  }
+}
+</style>

@@ -1,0 +1,168 @@
+---
+/**
+ * BaseLayout — scheletro di ogni pagina.
+ * Struttura, script di reveal e ordine dei nodi sono quelli del sito di partenza:
+ * non modificarli. Da compilare: SEO, dati identitari, favicon, OG image.
+ */
+import '@fontsource-variable/cormorant-garamond';
+import '@fontsource-variable/cormorant-garamond/wght-italic.css';
+import '@fontsource-variable/jost';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import IntroOverlay from '../components/IntroOverlay.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Markup JSON-LD aggiuntivo (es. FAQPage) da iniettare oltre a quello dello studio */
+  extraJsonLd?: string;
+  /** Tema dell'header sopra l'hero: "over" (trasparente) oppure "solid" */
+  headerTheme?: 'over' | 'light';
+  /** Mostra l'intro con il marchio all'apertura del sito (una volta per sessione) */
+  intro?: boolean;
+}
+
+const { title, description, extraJsonLd, headerTheme = 'light', intro = false } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://esempio.it').href;
+
+// Colore della barra del browser su mobile: uguale a --accent in global.css.
+const THEME_COLOR = '#765a31';
+
+// Nome dello studio: compilare col nome del cliente.
+const SITE_NAME = 'A+G Architettura';
+
+// Dati strutturati (JSON-LD) dello studio.
+// [[DA COMPILARE: indirizzi civici e CAP delle due sedi (+ coordinate geo) — il sito attuale indica solo le città]]
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ArchitecturalService',
+  name: 'A+G Architettura',
+  description,
+  url: Astro.site?.href ?? 'https://www.ag-architettura.it',
+  telephone: '+39 328 9063208',
+  email: 'info@ag-architettura.it',
+  vatID: '06368110828',
+  founder: [
+    { '@type': 'Person', name: 'Angela Culletta', jobTitle: 'Architetto' },
+    { '@type': 'Person', name: 'Filgena Haxhari', jobTitle: 'Architetto' },
+  ],
+  address: [
+    { '@type': 'PostalAddress', addressLocality: 'Biella', addressRegion: 'BI', addressCountry: 'IT' },
+    { '@type': 'PostalAddress', addressLocality: 'Vercelli', addressRegion: 'VC', addressCountry: 'IT' },
+  ],
+  areaServed: 'Piemonte',
+  sameAs: [
+    'https://www.instagram.com/ag_architettura',
+    'https://www.facebook.com/AGarchitettura',
+    'https://www.pinterest.it/AG_architettura',
+    'https://www.houzz.it/professionisti/architetti/a-g-architettura-pfvwit-pf~977053466',
+  ],
+  foundingDate: '2019',
+};
+---
+
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Reveal-on-scroll, fully inline so it never depends on the JS bundle loading.
+         Content is hidden only while JS runs (html.js); what's on screen is revealed immediately;
+         the rest reveals on scroll, with a scroll fallback so nothing can stay stuck hidden. -->
+    <script is:inline>
+      // l'intro si vede una volta per sessione: la decisione va presa prima del primo frame
+      try {
+        if (sessionStorage.getItem('studio-intro')) document.documentElement.classList.add('opening-skip');
+      } catch (e) {}
+      document.documentElement.classList.add('js');
+      (function () {
+        function setup() {
+          try {
+            var items = [].slice.call(document.querySelectorAll('[data-reveal],[data-clip],[data-stagger]'));
+            document.querySelectorAll('[data-stagger]').forEach(function (g) {
+              [].forEach.call(g.children, function (c, i) { c.style.setProperty('--i', i); });
+            });
+            function onScreen(el) {
+              var r = el.getBoundingClientRect();
+              return r.top < (window.innerHeight || document.documentElement.clientHeight) * 0.97 && r.bottom > 0;
+            }
+            function revealVisible() {
+              items.forEach(function (el) { if (!el.classList.contains('is-in') && onScreen(el)) el.classList.add('is-in'); });
+            }
+            revealVisible();
+            if ('IntersectionObserver' in window) {
+              var io = new IntersectionObserver(function (es) {
+                es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } });
+              }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
+              items.forEach(function (el) { if (!el.classList.contains('is-in')) io.observe(el); });
+            } else {
+              items.forEach(function (el) { el.classList.add('is-in'); });
+            }
+            var t;
+            function onScroll() { clearTimeout(t); t = setTimeout(revealVisible, 80); }
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onScroll, { passive: true });
+            window.addEventListener('load', revealVisible);
+          } catch (e) {
+            document.querySelectorAll('[data-reveal],[data-clip],[data-stagger]').forEach(function (el) { el.classList.add('is-in'); });
+          }
+        }
+        if (document.readyState !== 'loading') setup();
+        else document.addEventListener('DOMContentLoaded', setup);
+      })();
+    </script>
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/brand/favicon-16.png" />
+    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
+    <meta name="theme-color" content={THEME_COLOR} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/brand/og-cover.jpg', Astro.site ?? canonical).href} />
+    <meta property="og:locale" content="it_IT" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {extraJsonLd && <script type="application/ld+json" set:html={extraJsonLd} />}
+  </head>
+
+  <body>
+    {intro && <IntroOverlay />}
+    <a class="skip" href="#main">Vai al contenuto</a>
+    <Header theme={headerTheme} />
+    <slot />
+    <Footer />
+  </body>
+</html>
+
+<style>
+  :global(html.opening-lock),
+  :global(html.opening-lock body) {
+    overflow: hidden;
+  }
+
+  .skip {
+    position: absolute;
+    left: -999px;
+    top: 0;
+    z-index: 200;
+    background: var(--ink);
+    color: #fff;
+    padding: 0.7rem 1rem;
+  }
+
+  .skip:focus {
+    left: 0;
+  }
+</style>

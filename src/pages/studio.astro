@@ -1,0 +1,297 @@
+---
+/**
+ * Studio — presentazione, team, pubblicazioni, numeri.
+ * Testi e dati da compilare con il materiale del cliente.
+ */
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TeamDeck from '../components/TeamDeck.astro';
+import studioImg from '../assets/studio/angela-e-ghena-scrivania.jpg';
+
+const progetti = await getCollection('progetti');
+
+// La griglia "pubblicazioni" della base ospita le recensioni dei clienti (testi verbatim dal sito attuale,
+// sezione "Dicono di noi"): A+G non ha pubblicazioni, e la base non ha una sezione recensioni.
+// [[DA VALIDARE: scelta di 6 recensioni su 14 e etichette del tipo di lavoro scritte da noi]]
+const PUBBLICAZIONI = [
+  {
+    org: 'Restyling',
+    name: 'Giovanna F.',
+    note: 'Angela e Ghena sono davvero due ottime professioniste: scrupolose, puntuali e attente alle richieste dei clienti. Hanno interpretato alla perfezione la mia idea di rinnovare la camera da letto e insieme stanno, step by step, pensando ad un restyling di casa mia. Reperibili sempre e pronte alla risoluzione delle problematiche dei cantieri. Soddisfatta? Mooolto di più!',
+    years: [],
+  },
+  {
+    org: 'Ristrutturazione',
+    name: 'Laura e Lorenzo',
+    note: "A+G hanno seguito il progetto di ristrutturazione del nostro alloggio e ci hanno seguiti anche nella scelta di parte dell'arredamento. Molto disponibili e presenti, ci hanno accompagnati nelle scelte e nelle soluzioni più efficaci per la nostra casa.",
+    years: [],
+  },
+  {
+    org: 'Cucina su misura',
+    name: 'Ilaria e Simone',
+    note: "Angela e Ghena sono state due ottime professioniste. Senza di loro non sarebbe stato semplice per noi arredare casa: consigli utili volti a ottimizzare gli spazi e il budget. In particolare la nostra cucina è stata completamente ideata da loro con un focus all'estetica e alla funzionalità. Il loro lavoro è stato fondamentale e non avremmo potuto chiedere di meglio.",
+    years: [],
+  },
+  {
+    org: 'Consulenza',
+    name: 'Manuela V.',
+    note: "Gentili, disponibili e comprensive oltre che talentuose professioniste. Oneste e chiare sin dall'inizio. Ascoltano ogni vostra richiesta. Assolutamente raccomandate.",
+    years: [],
+  },
+  {
+    org: 'Locale',
+    name: 'Paolo V.',
+    note: 'Angela e Ghena ci hanno seguite e ci seguono tuttora per la progettazione completa di un locale destinato alla somministrazione di birra artigianale. Le proposte che ci hanno presentato incontrano il nostro gusto e loro sono due professioniste serie, aggiornate e competenti, oltre che simpatiche... consigliatissime!',
+    years: [],
+  },
+  {
+    org: 'Chiavi in mano',
+    name: 'Ugo O.',
+    note: 'Professionali, appassionate al loro lavoro hanno arredato per me un appartamento. Hanno realizzato il progetto chiavi in mano acquistando gli arredi, curando i montaggi e coordinando il lavoro degli artigiani. Il tutto rispettando budget e tempi di consegna. Che dire di più?',
+    years: [],
+  },
+];
+
+const NUMERI = [
+  { v: '2', l: 'architetti, una per sede' },
+  { v: String(progetti.length), l: 'progetti pubblicati' },
+  { v: '2', l: 'sedi: Biella e Vercelli' },
+  { v: '2019', l: 'nasce A+G Architettura' },
+];
+---
+
+<BaseLayout
+  title="Chi siamo · A+G Architettura, Biella e Vercelli"
+  description="Angela Culletta e Filgena Haxhari: due architetti, amiche e colleghe con la passione per l'Interior Design, con basi operative a Biella e Vercelli."
+>
+  <main id="main">
+    <section class="sthead section">
+      <div class="container">
+        <p class="eyebrow" data-reveal>Chi siamo</p>
+        <h1 class="display sthead__title" data-reveal>Angela<br />+ Ghena</h1>
+      </div>
+    </section>
+
+    <section class="stintro">
+      <div class="container stintro__grid">
+        <div class="stintro__text" data-reveal>
+          <p class="lead">
+            Due Architetti, amiche e colleghe con la passione per l’Interior Design. Con case e basi operative a Biella e Vercelli ci occupiamo di case e retail dalla progettazione al cantiere, costruendo soluzioni uniche e creative su misura per il cliente.
+          </p>
+          <p class="muted">
+            Lo studio si occupa non solo di ristrutturazioni, ma anche di consulenza di interni, allestimenti e direzione artistica dei lavori. Ci occupiamo anche di pratiche edilizie e direzione dei lavori, della sicurezza del cantiere e della direzione artistica degli interni.
+          </p>
+          <p class="muted">
+            I nostri punti forti? Siamo le due facce della stessa medaglia, con gli stessi gusti, le stesse idee e modus operandi. Riusciamo a muoverci facilmente in tutto il Piemonte e ci sarà sempre una delle due a tua disposizione.
+          </p>
+          <p class="muted">
+            Ti seguiremo passo passo per consegnarti le chiavi della tua nuova casa. D'altronde si sa… TWO is megl’ che ONE!
+          </p>
+        </div>
+        <div class="stintro__media">
+          <figure class="stintro__frame" data-clip>
+            <Image
+              src={studioImg}
+              alt="Angela Culletta e Filgena Haxhari, le due architette di A+G Architettura"
+              widths={[500, 800, 1000]}
+              sizes="(min-width:900px) 45vw, 90vw"
+              loading="lazy"
+              class="stintro__img"
+            />
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="section team section--tint">
+      <div class="container">
+        <h2 class="h-section team__h" data-reveal>Le due facce della stessa medaglia</h2>
+        <div data-reveal>
+          <TeamDeck />
+        </div>
+      </div>
+    </section>
+
+    <section class="section awards">
+      <div class="container">
+        <p class="eyebrow" data-reveal>Recensioni</p>
+        <h2 class="h-section awards__h" data-reveal>Dicono di noi</h2>
+        <div class="awards__grid" data-stagger>
+          {PUBBLICAZIONI.map((a) => (
+            <article class="award">
+              <span class="award__org">{a.org}</span>
+              <h3 class="award__name">{a.name}</h3>
+              <p class="award__note muted">{a.note}</p>
+              {a.years.length > 0 && (
+                <ul class="award__years">
+                  {a.years.map((y) => <li>{y}</li>)}
+                </ul>
+              )}
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="section stproof on-dark">
+      <div class="container stproof__grid" data-stagger>
+        {NUMERI.map((p) => (
+          <div class="stproof__item"><strong>{p.v}</strong><span>{p.l}</span></div>
+        ))}
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+.sthead {
+  padding-top:calc(var(--header-h) + clamp(2.5rem,6vw,5rem));
+  padding-bottom:clamp(1.5rem,3vw,2.5rem)
+}
+
+.stintro {
+  padding-bottom:clamp(3.5rem,8vw,7rem)
+}
+
+.stintro__grid {
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:clamp(2.5rem,6vw,5rem);
+  align-items:stretch
+}
+
+.stintro__text > * + * {
+  margin-top:1.3rem
+}
+
+.stintro__media {
+  display:flex
+}
+
+.stintro__frame {
+  margin:0;
+  flex:1 1 auto;
+  min-height:320px;
+  overflow:hidden;
+  background:var(--line)
+}
+
+.stintro__img {
+  width:100%;
+  height:100%;
+  object-fit:cover
+}
+
+.team__h {
+  margin-bottom:clamp(2rem,4vw,3.5rem)
+}
+
+.awards__h {
+  margin:1rem 0 clamp(2rem,4vw,3rem)
+}
+
+.awards__grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2rem
+}
+
+.award {
+  position:relative;
+  border-top:2px solid var(--ink);
+  padding-top:1.3rem
+}
+
+.award:before {
+  content:"";
+  position:absolute;
+  top:-2px;
+  left:0;
+  height:2px;
+  width:0;
+  background:var(--accent);
+  transition:width .55s var(--ease)
+}
+
+.award:hover:before {
+  width:100%
+}
+
+.award__org {
+  font-size:.74rem;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--accent)
+}
+
+.award__name {
+  font-family:var(--font-display);
+  font-size:1.6rem;
+  letter-spacing:-.02em;
+  margin:.5rem 0 .4rem
+}
+
+.award__note {
+  font-size:.9rem;
+  margin:0 0 1.1rem
+}
+
+.award__years {
+  list-style:none;
+  display:flex;
+  flex-wrap:wrap;
+  gap:.45rem;
+  margin:0;
+  padding:0
+}
+
+.award__years li {
+  font-size:.82rem;
+  font-weight:500;
+  color:var(--ink);
+  border:1px solid var(--line-strong);
+  padding:.3rem .6rem;
+  transition:border-color .3s var(--ease),color .3s var(--ease)
+}
+
+.award:hover .award__years li {
+  border-color:var(--accent);
+  color:var(--accent-deep)
+}
+
+.stproof__grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:2rem
+}
+
+.stproof__item {
+  border-top:1px solid rgba(244,242,238,.2);
+  padding-top:1rem
+}
+
+.stproof__item strong {
+  display:block;
+  font-family:var(--font-display);
+  font-size:clamp(2rem,4vw,3rem);
+  font-weight:560;
+  color:var(--on-dark);
+  letter-spacing:-.02em
+}
+
+.stproof__item span {
+  font-size:.84rem;
+  color:var(--on-dark-muted)
+}
+
+@media(max-width:820px) {
+  .stintro__grid,.awards__grid {
+    grid-template-columns:1fr
+  }
+  .stproof__grid {
+    grid-template-columns:1fr 1fr
+  }
+}
+</style>

@@ -1,0 +1,47 @@
+---
+/**
+ * Pagina 404.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GetStartedButton from '../components/GetStartedButton.astro';
+---
+
+<BaseLayout
+  title="Pagina non trovata · A+G Architettura"
+  description="La pagina che cerchi non esiste o è stata spostata."
+>
+  <main id="main">
+    <section class="nf section">
+      <div class="container">
+        <p class="eyebrow">Errore 404</p>
+        <h1 class="display nf__title">Questa pagina<br />non esiste.</h1>
+        <p class="lead muted nf__lead">La pagina che cerchi è stata spostata o non è mai esistita.</p>
+        <div class="nf__cta">
+          <GetStartedButton href="/" label="Torna alla home" />
+          <a class="btn btn--ghost" href="/progetti/">Vedi i progetti</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .nf {
+    padding-top: calc(var(--header-h) + clamp(4rem, 10vw, 8rem));
+  }
+
+  .nf__title {
+    margin: 1rem 0 1.4rem;
+  }
+
+  .nf__lead {
+    max-width: 34rem;
+  }
+
+  .nf__cta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+</style>

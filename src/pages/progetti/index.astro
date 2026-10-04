@@ -1,0 +1,143 @@
+---
+/**
+ * Elenco progetti — intestazione, filtri per ambito, griglia di schede.
+ * Lo script dei filtri lavora su data-filter / data-cat / data-grid / data-empty.
+ */
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+
+const projects = (await getCollection('progetti')).sort((a, b) => a.data.order - b.data.order);
+
+const count = (key: string) =>
+  key === 'all' ? projects.length : projects.filter((p) => p.data.category === key).length;
+
+// Le chiavi combaciano con data-cat delle schede: sono le sezioni del portfolio dello studio.
+const FILTERS = [
+  { key: 'all', label: 'Tutti' },
+  { key: 'architettura', label: 'Ristrutturazioni' },
+  { key: 'interior', label: 'Interni su misura' },
+  { key: 'allestimenti', label: 'Singoli ambienti' },
+  { key: 'concorsi', label: 'Retail' },
+];
+---
+
+<BaseLayout
+  title="Progetti · A+G Architettura"
+  description="Case, interni e locali progettati da A+G Architettura tra Biella, Vercelli, Torino e Milano: ristrutturazioni, interni su misura e retail."
+>
+  <main id="main">
+    <section class="phead section">
+      <div class="container">
+        <p class="eyebrow" data-reveal>Portfolio &middot; {projects.length} progetti</p>
+        <h1 class="display phead__title" data-reveal>I nostri progetti</h1>
+        <p class="lead phead__lead" data-reveal>
+          {/* [[DA VALIDARE: introduzione scritta da noi sul portfolio reale]] */}
+          Case e retail dalla progettazione al cantiere: ristrutturazioni complete, interni su misura e singoli ambienti tra Biella, Vercelli, Torino e Milano.
+        </p>
+      </div>
+    </section>
+
+    <div class="container">
+      <div class="filters" role="group" aria-label="Filtra i progetti">
+        {FILTERS.map((f, i) => (
+          <button class:list={['filter', { 'is-active': i === 0 }]} data-filter={f.key} type="button">
+            {f.label} <span class="filter__n">{count(f.key)}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <section class="section plist section--tint">
+      <div class="container">
+        <div class="grid2" data-grid>
+          {projects.map((p, i) => <ProjectCard project={p} eager={i < 4} />)}
+        </div>
+        <p class="empty" data-empty hidden>Nessun progetto in questo ambito.</p>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  // Filtri di categoria: mostrano/nascondono le schede. Codice invariato.
+const o=document.querySelectorAll("[data-filter]"),d=document.querySelectorAll("[data-grid] [data-cat]"),r=document.querySelector("[data-empty]");o.forEach(e=>e.addEventListener("click",()=>{const a=e.getAttribute("data-filter");o.forEach(t=>t.classList.toggle("is-active",t===e));let c=0;d.forEach(t=>{const l=a==="all"||t.getAttribute("data-cat")===a;t.style.display=l?"":"none",l&&c++}),r&&(r.hidden=c!==0)}));</script>
+
+<style>
+.phead {
+  padding-bottom:0;
+  padding-top:calc(var(--header-h) + clamp(2.5rem,6vw,5rem))
+}
+
+.phead__title {
+  margin:1rem 0 1.4rem;
+  text-transform:lowercase
+}
+
+.phead__lead {
+  max-width:44rem
+}
+
+.filters {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.6rem;
+  padding-block:clamp(1.5rem,4vw,2.5rem);
+  border-bottom:1px solid var(--line)
+}
+
+.filter {
+  background:transparent;
+  border:1px solid var(--line-strong);
+  color:var(--ink);
+  padding:.6rem 1.1rem;
+  font-size:.82rem;
+  font-weight:500;
+  letter-spacing:.01em;
+  display:inline-flex;
+  align-items:center;
+  gap:.5rem;
+  transition:all .3s var(--ease)
+}
+
+.filter:hover {
+  border-color:var(--ink)
+}
+
+.filter.is-active {
+  background:var(--ink);
+  color:var(--on-dark);
+  border-color:var(--ink)
+}
+
+.filter__n {
+  font-size:.7rem;
+  opacity:.6
+}
+
+.filter.is-active .filter__n {
+  opacity:.8
+}
+
+.plist {
+  padding-top:clamp(2.5rem,5vw,3.5rem)
+}
+
+.grid2 {
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:clamp(1.5rem,3vw,2.5rem) 2rem
+}
+
+.empty {
+  text-align:center;
+  color:var(--muted);
+  padding:3rem 0
+}
+
+@media(max-width:900px) {
+  .grid2 {
+    grid-template-columns:1fr
+  }
+}
+</style>

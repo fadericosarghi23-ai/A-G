@@ -1,0 +1,252 @@
+---
+/**
+ * IntroOverlay — l'apertura del sito con il logo di A+G Architettura.
+ *
+ * Coreografia, su fondo cipria come nel marchio:
+ * 1. il contorno oro di ogni lettera si disegna, da sinistra a destra;
+ * 2. le lettere si riempiono d'oro e un riflesso di luce le attraversa;
+ * 3. sotto il logo si apre un filo oro, poi il velo sale e scopre il sito.
+ *
+ * Il tracciato viene da public/brand/logo-compatto.svg (logo ricalcato dal PNG del cliente):
+ * quando arriverà l'SVG ufficiale basta sostituire quel file.
+ *
+ * Regole che si è dato questo componente:
+ * - la coreografia è tutta in CSS, così parte al primo frame e non dipende dal JS;
+ * - alla fine dell'animazione il velo si toglie da solo (animation-fill-mode: forwards),
+ *   quindi anche se il JS non gira il sito resta utilizzabile;
+ * - il JS serve solo a ricordare che l'intro è già stata vista in questa sessione,
+ *   a sbloccare lo scroll e a permettere di saltarla con un clic o un tasto;
+ * - con prefers-reduced-motion l'intro non compare affatto.
+ */
+import logoRaw from '../../public/brand/logo-compatto.svg?raw';
+
+const viewBox = logoRaw.match(/viewBox="([^"]+)"/)![1];
+const [vx, vy, vw, vh] = viewBox.split(/\s+/).map(Number);
+const d = logoRaw.match(/ d="([^"]+)"/)![1];
+
+// Un tratto per ogni contorno (lettere e fori), con ritardo in base alla posizione orizzontale:
+// il logo si disegna da sinistra a destra.
+const tratti = d
+  .split(/(?=M)/)
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .map((s) => {
+    const [, x] = s.match(/^M\s*(-?[\d.]+)/) ?? [, String(vx)];
+    const pos = Math.min(1, Math.max(0, (Number(x) - vx) / vw));
+    return { d: s, delay: (0.15 + pos * 0.55).toFixed(2) };
+  });
+---
+
+<div class="opening" data-opening aria-hidden="true">
+  <div class="opening__stage">
+    <svg class="opening__logo" viewBox={viewBox} style={`--sweep:${Math.round(vw * 1.7)}px`}>
+      <defs>
+        <linearGradient id="opening-oro" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#c8ab78" />
+          <stop offset="1" stop-color="#9a8060" />
+        </linearGradient>
+        <linearGradient id="opening-luce" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#fff" stop-opacity="0" />
+          <stop offset="0.5" stop-color="#fff" stop-opacity="0.75" />
+          <stop offset="1" stop-color="#fff" stop-opacity="0" />
+        </linearGradient>
+        <clipPath id="opening-sagoma">
+          <path d={d} fill-rule="evenodd" />
+        </clipPath>
+      </defs>
+
+      <!-- riempimento oro, entra dopo il disegno dei contorni -->
+      <path class="opening__fill" d={d} fill="url(#opening-oro)" fill-rule="evenodd" />
+
+      <!-- contorni che si disegnano -->
+      <g class="opening__trace">
+        {tratti.map((t) => (
+          <path d={t.d} pathLength="1" style={`animation-delay:${t.delay}s`} />
+        ))}
+      </g>
+
+      <!-- riflesso di luce, ritagliato sulla sagoma del logo -->
+      <g clip-path="url(#opening-sagoma)">
+        <rect class="opening__shine" x={vx - vw * 0.7} y={vy} width={vw * 0.45} height={vh} fill="url(#opening-luce)" />
+      </g>
+    </svg>
+
+    <span class="opening__rule" aria-hidden="true"></span>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const intro = document.querySelector('[data-opening]');
+    if (!intro) return;
+
+    // se il velo non si vede — già visto in questa sessione, o animazioni ridotte —
+    // lo script non deve fare niente: niente blocco dello scroll, niente timer
+    const nascosto =
+      document.documentElement.classList.contains('opening-skip') ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (nascosto) {
+      intro.remove();
+      return;
+    }
+
+    const chiudi = () => {
+      intro.classList.add('is-off');
+      document.documentElement.classList.remove('opening-lock');
+      try { sessionStorage.setItem('studio-intro', '1'); } catch {}
+      // rete di sicurezza: se le animazioni sono congelate (scheda in secondo piano,
+      // batteria bassa, throttling del browser) l'animationend non arriva mai.
+      // Il velo se ne va comunque.
+      setTimeout(() => intro.remove(), 450);
+    };
+
+    // blocca lo scroll mentre il velo è su, ma con una rete di sicurezza:
+    // qualunque cosa succeda, dopo 3s lo scroll torna libero
+    document.documentElement.classList.add('opening-lock');
+    setTimeout(chiudi, 3000);
+
+    // si può saltare
+    ['pointerdown', 'keydown', 'wheel'].forEach((ev) =>
+      window.addEventListener(ev, chiudi, { once: true, passive: true })
+    );
+
+    // quando il velo ha finito di salire: scroll libero, intro segnata come vista, fuori dal DOM
+    intro.addEventListener('animationend', (e) => {
+      if (e.target !== intro || !e.animationName.startsWith('opening-exit')) return;
+      document.documentElement.classList.remove('opening-lock');
+      try { sessionStorage.setItem('studio-intro', '1'); } catch {}
+      intro.remove();
+    });
+  })();
+</script>
+
+<style>
+  .opening {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: grid;
+    place-items: center;
+    background: var(--tint);
+    animation: opening-exit 0.8s cubic-bezier(0.76, 0, 0.24, 1) 2.1s forwards;
+  }
+
+  .opening.is-off {
+    /* non aspetta l'animazione per smettere di intercettare i clic */
+    pointer-events: none;
+    animation: opening-fade 0.35s var(--ease) forwards;
+  }
+
+  .opening__stage {
+    display: grid;
+    justify-items: center;
+    gap: clamp(1.4rem, 3vw, 2rem);
+    animation: opening-stage-out 0.6s var(--ease) 1.95s forwards;
+  }
+
+  .opening__logo {
+    display: block;
+    width: min(62vw, 360px);
+    height: auto;
+    overflow: visible;
+  }
+
+  /* 1 — contorni */
+  .opening__trace path {
+    fill: none;
+    stroke: url(#opening-oro);
+    stroke-width: 2.6;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation:
+      opening-draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) forwards,
+      opening-trace-out 0.4s ease 1.35s forwards;
+  }
+
+  /* 2 — riempimento e riflesso */
+  .opening__fill {
+    opacity: 0;
+    animation: opening-in 0.55s ease 1.05s forwards;
+  }
+
+  .opening__shine {
+    animation: opening-shine 0.9s cubic-bezier(0.45, 0, 0.2, 1) 1.3s forwards;
+  }
+
+  /* 3 — filo oro sotto il logo */
+  .opening__rule {
+    display: block;
+    width: clamp(56px, 12vw, 96px);
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    animation: opening-rule 0.7s var(--ease) 1.25s forwards;
+  }
+
+  @keyframes opening-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes opening-trace-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes opening-in {
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes opening-shine {
+    to {
+      transform: translateX(var(--sweep));
+    }
+  }
+
+  @keyframes opening-rule {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes opening-stage-out {
+    to {
+      opacity: 0;
+      transform: translateY(-18px);
+    }
+  }
+
+  /* il velo sale e scopre il sito */
+  @keyframes opening-exit {
+    to {
+      transform: translateY(-100%);
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+
+  /* uscita rapida quando l'intro viene saltata */
+  @keyframes opening-fade {
+    to {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+
+  /* già vista in questa sessione, oppure animazioni ridotte: niente intro */
+  :global(html.opening-skip) .opening {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .opening {
+      display: none;
+    }
+  }
+</style>

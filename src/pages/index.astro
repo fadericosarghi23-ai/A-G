@@ -1,0 +1,648 @@
+---
+/**
+ * Home.
+ * Sezioni: hero con due colonne a scorrimento continuo (+ slider mobile), intro,
+ * mazzo progetti, ambiti, metodo.
+ * Gli attributi data-track / data-dir / data-count e i valori style="top:N%" reggono
+ * l'animazione del marquee: non toccarli.
+ */
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import GetStartedButton from '../components/GetStartedButton.astro';
+import ProjectStack from '../components/ProjectStack.astro';
+
+// Foto reali A+G (sito ag-architettura.it). Le colonne dell'hero sono verticali: scatti verticali.
+import heroA from '../assets/progetti/casa-del-glicine/03.jpg';
+import heroB from '../assets/progetti/casa-akarui/08.jpg';
+import heroC from '../assets/progetti/casa-sole/03.jpg';
+import heroD from '../assets/progetti/casa-del-glicine/23.jpg';
+import heroE from '../assets/progetti/casa-akarui/14.jpg';
+import heroF from '../assets/progetti/casa-sole/05.jpg';
+import introImg from '../assets/studio/angela-e-ghena-divano.jpg';
+
+// L'ultima slide di ogni colonna ripete la prima: serve al loop continuo del marquee.
+const colUp = [heroA, heroB, heroC, heroD, heroE, heroA];
+const colDown = [heroF, heroD, heroB, heroC, heroE, heroF];
+const mobileSlides = [heroA, heroC, heroB, heroF, heroD, heroE];
+
+const tutti = await getCollection('progetti');
+const projects = tutti
+  .filter((p) => p.data.featured)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 6);
+
+const perAmbito = (key: string) => tutti.filter((p) => p.data.category === key).length;
+
+// I quattro ambiti del portfolio A+G (le chiavi restano la tassonomia della base).
+// [[DA VALIDARE: nomi degli ambiti e sintesi scritti da noi sul portfolio e sui servizi del sito attuale]]
+const AMBITI = [
+  {
+    key: 'architettura',
+    n: perAmbito('architettura'),
+    title: 'Ristrutturazioni',
+    sum: 'Per chi deve costruire, progettare o ristrutturare casa: dalle fasi preliminari alle chiavi in mano.',
+  },
+  {
+    key: 'interior',
+    n: perAmbito('interior'),
+    title: 'Interni su misura',
+    sum: 'Soluzioni estetiche e funzionali per uno o più ambienti, anche attraverso piccoli interventi.',
+  },
+  {
+    key: 'allestimenti',
+    n: perAmbito('allestimenti'),
+    title: 'Singoli ambienti',
+    sum: 'La stanza che non ti piace più: arredo, colori e finiture per darle un nuovo look.',
+  },
+  {
+    key: 'concorsi',
+    n: perAmbito('concorsi'),
+    title: 'Retail',
+    sum: 'Locali e attività commerciali, dal progetto architettonico alla direzione dei lavori.',
+  },
+];
+
+/**
+ * Il metodo dello studio in tre fasi: titolo della fase e tre voci brevi ciascuna,
+ * da ricavare dai testi del cliente.
+ */
+// Voci prese dal "come funziona" dei servizi sul sito attuale.
+// [[DA VALIDARE: titoli delle tre fasi scritti da noi]]
+const STEPS = [
+  {
+    n: '01',
+    title: 'Conosciamoci',
+    items: [
+      'Mini call gratuita di 15 minuti',
+      'Appuntamenti, sopralluoghi e rilievi',
+      'Preventivo su misura',
+    ],
+  },
+  {
+    n: '02',
+    title: 'Il progetto',
+    items: [
+      'Planimetrie arredate e moodboard',
+      'Book di progetto con shopping list',
+      'Elaborati tecnici e pratiche edilizie',
+    ],
+  },
+  {
+    n: '03',
+    title: 'Il cantiere',
+    items: [
+      'Coordinamento di imprese e artigiani',
+      'Direzione dei lavori e sicurezza',
+      'Direzione artistica degli interni',
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="A+G Architettura · Architetti e interior design a Biella e Vercelli"
+  description="Disegniamo e realizziamo la tua casa: due architetti con la passione per l'Interior Design, dalla progettazione al cantiere a Biella e Vercelli."
+  headerTheme="over"
+  intro
+>
+  <main id="main">
+    <section class="hero" data-hero>
+      <div class="hero__split" aria-hidden="true">
+        <div class="hero__col">
+          <div class="hero__track" data-track data-dir="up" data-count="5">
+            {colUp.map((img, i) => (
+              <div class="hero__slide" style={`top:${i * 100}%`}>
+                <Image src={img} alt="" widths={[500, 800, 1100]} sizes="50vw" loading="eager" class="hero__simg" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div class="hero__col">
+          <div class="hero__track" data-track data-dir="down" data-count="5">
+            {colDown.map((img, i) => (
+              <div class="hero__slide" style={`top:${i * 100}%`}>
+                <Image src={img} alt="" widths={[500, 800, 1100]} sizes="50vw" loading="eager" class="hero__simg" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div class="hero__mobile" data-hero-mobile aria-hidden="true">
+        {mobileSlides.map((img, i) => (
+          <div class:list={['hero__mslide', { 'is-active': i === 0 }]}>
+            <Image src={img} alt="" widths={[600, 900, 1200]} sizes="100vw" loading={i === 0 ? 'eager' : 'lazy'} class="hero__msimg" />
+          </div>
+        ))}
+      </div>
+
+      <div class="hero__scrim"></div>
+      <div class="hero__veil" aria-hidden="true"></div>
+
+      <div class="hero__inner container">
+        <p class="hero__eyebrow" data-hero-fade>Architettura e interior design · Biella e Vercelli</p>
+        <h1 class="hero__title display"><span class="hero__caps">A+G</span><br />architettura</h1>
+        <p class="hero__desc" data-hero-fade>
+          Disegniamo e realizziamo la tua casa. Ti seguiremo passo passo per consegnarti le chiavi della tua nuova casa.
+        </p>
+        <div class="hero__cta" data-hero-fade>
+          <GetStartedButton href="/progetti/" label="Scopri i progetti" />
+          <GetStartedButton href="/contatti/" label="Mini-call gratuita" class="gsbtn--outline" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section intro">
+      <div class="container intro__grid">
+        <div class="intro__text">
+          <p class="eyebrow" data-reveal>Chi siamo</p>
+          <h2 class="h-section" data-reveal>
+            Angela <span class="thin italic">+</span> Ghena
+          </h2>
+          <p class="lead" data-reveal>
+            Due Architetti, amiche e colleghe con la passione per l’Interior Design. Con case e basi operative a Biella e Vercelli ci occupiamo di case e retail dalla progettazione al cantiere.
+          </p>
+          <p data-reveal class="muted">
+            I nostri punti forti? Siamo le due facce della stessa medaglia, con gli stessi gusti, le stesse idee e modus operandi. D'altronde si sa… TWO is megl’ che ONE!
+          </p>
+          <a class="tlink intro__link" href="/studio/" data-reveal>Conosci lo studio &#8599;</a>
+        </div>
+
+        <div class="intro__media" data-reveal>
+          <figure class="intro__frame">
+            <Image
+              src={introImg}
+              alt="Angela Culletta e Filgena Haxhari, le due architette di A+G Architettura"
+              widths={[700, 1000, 1300]}
+              sizes="(min-width:900px) 42vw, 90vw"
+              loading="lazy"
+              class="intro__img"
+            />
+          </figure>
+          <div class="intro__stats">
+            <div><strong>2019</strong><span>nasce A+G Architettura</span></div>
+            <div><strong>{tutti.length}</strong><span>progetti pubblicati</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <ProjectStack projects={projects} />
+
+    <section class="section services on-dark">
+      <div class="container">
+        <p class="eyebrow" data-reveal>Cosa facciamo</p>
+        <h2 class="h-section services__title" data-reveal>Dalla progettazione<br />al cantiere</h2>
+        <p class="lead services__lead muted" data-reveal>
+          Lo studio si occupa non solo di ristrutturazioni, ma anche di consulenza di interni, allestimenti e direzione artistica dei lavori.
+        </p>
+        <div class="services__grid" data-stagger>
+          {AMBITI.map((s) => (
+            <a class="svc" href={`/progetti/`}>
+              <span class="svc__key">{String(s.n).padStart(2, '0')}</span>
+              <h3 class="svc__title">{s.title}</h3>
+              <p class="svc__sum muted">{s.sum}</p>
+              <span class="svc__go">Vedi i progetti &#8599;</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="section method">
+      <div class="container">
+        <div class="method__head">
+          <p class="eyebrow" data-reveal>Come lavoriamo</p>
+          <h2 class="h-section" data-reveal>Ti seguiamo<br />passo passo</h2>
+        </div>
+        <div class="method__grid" data-stagger>
+          {STEPS.map((s) => (
+            <div class="mstep">
+              <span class="mstep__n">{s.n}</span>
+              <h3 class="mstep__title">{s.title}</h3>
+              <ul class="mstep__list">
+                {s.items.map((it) => <li>{it}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <a class="btn btn--ghost method__btn" href="/metodo/" data-reveal>Scopri il metodo <span class="arrow">&#8599;</span></a>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  // Marquee verticale continuo delle due colonne dell'hero. Codice invariato.
+const c="transform 1.15s cubic-bezier(0.16, 1, 0.3, 1)";const a=window.matchMedia("(prefers-reduced-motion: reduce)").matches;document.querySelectorAll("[data-track]").forEach(e=>{const t=Number(e.getAttribute("data-count"))||1,r=e.getAttribute("data-dir");let s=r==="up"?0:t;const n=o=>{e.style.transition=o?c:"none",e.style.transform=`translateY(${-s*100}%)`};n(!1),!(a||t<2)&&setInterval(()=>{(r==="up"?s>=t:s<=0)&&(s=r==="up"?0:t,n(!1),e.offsetHeight),s+=r==="up"?1:-1,n(!0)},5e3)});const i=document.querySelector("[data-hero-mobile]");if(i){const e=Array.from(i.querySelectorAll(".hero__mslide"));let t=0;!a&&e.length>1&&setInterval(()=>{e[t].classList.remove("is-active"),t=(t+1)%e.length,e[t].classList.add("is-active")},5e3)}</script>
+
+<style>
+.hero {
+  position:relative;
+  height:100svh;
+  min-height:640px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  overflow:hidden;
+  background:var(--dark)
+}
+
+.hero__split {
+  position:absolute;
+  inset:0;
+  z-index:0;
+  display:grid;
+  grid-template-columns:1fr 1fr
+}
+
+.hero__col {
+  position:relative;
+  overflow:hidden
+}
+
+.hero__col:first-child:after {
+  content:"";
+  position:absolute;
+  top:0;
+  right:0;
+  bottom:0;
+  width:1px;
+  z-index:3;
+  background:#f4f2ee24
+}
+
+.hero__track {
+  position:absolute;
+  inset:0;
+  will-change:transform
+}
+
+.hero__slide {
+  position:absolute;
+  left:0;
+  right:0;
+  height:100%
+}
+
+.hero__simg {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block
+}
+
+.hero__mobile {
+  display:none;
+  position:absolute;
+  inset:0;
+  z-index:0
+}
+
+.hero__mslide {
+  position:absolute;
+  inset:0;
+  opacity:0;
+  transition:opacity 1.2s ease
+}
+
+.hero__mslide.is-active {
+  opacity:1
+}
+
+.hero__msimg {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block
+}
+
+@media(max-width:768px) {
+  .hero__split {
+    display:none
+  }
+  .hero__mobile {
+    display:block
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .hero__mslide {
+    transition:none
+  }
+}
+
+.hero__scrim {
+  position:absolute;
+  inset:0;
+  z-index:1;
+  background:linear-gradient(180deg,#0a141680,#0a141647 34%,#0a14168c 76%,#0a1416cc)
+}
+
+.hero__veil {
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:radial-gradient(ellipse 62% 52% at 50% 50%,#060c0e94,#060c0e57 44%,#060c0e00 72%)
+}
+
+.hero__inner {
+  position:relative;
+  z-index:2;
+  color:var(--on-dark);
+  display:flex;
+  flex-direction:column;
+  align-items:center
+}
+
+.hero__eyebrow {
+  font-size:.8rem;
+  font-weight:500;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:#f4f2eed9;
+  margin:0 0 1.3rem
+}
+
+.hero__title {
+  color:#fff;
+  text-transform:lowercase;
+  margin-bottom:1.6rem
+}
+
+/* la sigla dello studio resta maiuscola come nel logo */
+.hero__caps {
+  text-transform:uppercase
+}
+
+.hero__desc {
+  max-width:42rem;
+  font-size:clamp(1.05rem,1.7vw,1.3rem);
+  line-height:1.55;
+  color:#f4f2eeeb;
+  margin:0 auto 2.2rem
+}
+
+.hero__cta {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.9rem;
+  justify-content:center
+}
+
+.section {
+  padding-block:clamp(2.25rem,4.5vw,4rem)
+}
+
+.intro__grid {
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:clamp(2.5rem,6vw,6rem);
+  align-items:stretch
+}
+
+.intro__text > * + * {
+  margin-top:1.4rem
+}
+
+.intro__text .eyebrow+h2 {
+  margin-top:1rem
+}
+
+.intro__link {
+  display:inline-block;
+  margin-top:1.8rem
+}
+
+.intro__media {
+  display:flex;
+  flex-direction:column
+}
+
+.intro__frame {
+  margin:0;
+  flex:1 1 auto;
+  min-height:340px;
+  overflow:hidden;
+  background:var(--line)
+}
+
+.intro__img {
+  width:100%;
+  height:100%;
+  object-fit:cover
+}
+
+.intro__stats {
+  display:flex;
+  gap:1.5rem;
+  margin-top:1.5rem;
+  flex:none
+}
+
+.intro__stats div {
+  flex:1;
+  border-top:1px solid var(--line);
+  padding-top:.9rem
+}
+
+.intro__stats strong {
+  display:block;
+  font-family:var(--font-display);
+  font-size:2rem;
+  font-weight:560;
+  letter-spacing:-.02em
+}
+
+.intro__stats span {
+  font-size:.82rem;
+  color:var(--muted)
+}
+
+.services__title {
+  margin:1rem 0 1.4rem
+}
+
+.services__lead {
+  max-width:44rem
+}
+
+.services__grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:#f4f2ee24;
+  margin-top:clamp(2.5rem,5vw,4rem);
+  border:1px solid rgba(244,242,238,.14)
+}
+
+.svc {
+  position:relative;
+  z-index:0;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background:var(--dark);
+  padding:2rem 1.6rem 1.8rem;
+  min-height:260px;
+  transition:opacity .7s var(--ease),transform .45s var(--ease),box-shadow .45s var(--ease);
+  transition-delay:calc(var(--i, 0) * 80ms),0s,0s
+}
+
+.svc:before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:var(--dark-2);
+  opacity:0;
+  transition:opacity .45s var(--ease)
+}
+
+.svc > * {
+  position:relative;
+  z-index:1
+}
+
+.svc__key {
+  font-family:var(--font-display);
+  font-size:2.4rem;
+  font-weight:600;
+  color:var(--accent-on-dark);
+  letter-spacing:-.02em;
+  line-height:1;
+  transition:transform .45s var(--ease);
+  transform-origin:left
+}
+
+.svc__title {
+  font-size:1.15rem;
+  margin:1rem 0 .7rem;
+  color:var(--on-dark)
+}
+
+.svc__sum {
+  font-size:.88rem;
+  line-height:1.5;
+  flex:1
+}
+
+.svc__go {
+  font-size:.8rem;
+  font-weight:600;
+  letter-spacing:.04em;
+  color:var(--accent-on-dark);
+  margin-top:1rem;
+  transition:transform .35s var(--ease)
+}
+
+.svc:hover {
+  transform:translateY(-8px);
+  z-index:2;
+  box-shadow:0 24px 48px -22px #0009
+}
+
+.svc:hover:before {
+  opacity:1
+}
+
+.svc:hover .svc__key {
+  transform:translateY(-3px) scale(1.06)
+}
+
+.svc:hover .svc__go {
+  transform:translate(6px)
+}
+
+.method__head {
+  max-width:46rem;
+  margin-bottom:clamp(2.5rem,5vw,4rem)
+}
+
+.method__head .eyebrow+h2 {
+  margin-top:1rem
+}
+
+.method__grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2rem
+}
+
+.mstep {
+  position:relative;
+  border-top:2px solid var(--ink);
+  padding-top:1.4rem
+}
+
+.mstep:before {
+  content:"";
+  position:absolute;
+  top:-2px;
+  left:0;
+  height:2px;
+  width:0;
+  background:var(--accent);
+  transition:width .55s var(--ease)
+}
+
+.mstep:hover:before {
+  width:100%
+}
+
+.mstep__n {
+  font-family:var(--font-display);
+  font-size:1rem;
+  font-weight:600;
+  color:var(--accent)
+}
+
+.mstep__title {
+  font-size:1.4rem;
+  margin:.6rem 0 1.1rem;
+  letter-spacing:-.02em
+}
+
+.mstep__list {
+  list-style:none;
+  margin:0;
+  padding:0
+}
+
+.mstep__list li {
+  font-size:.92rem;
+  color:var(--muted);
+  padding:.5rem 0;
+  border-bottom:1px solid var(--line);
+  transition:color .3s var(--ease),padding-left .3s var(--ease)
+}
+
+.mstep__list li:hover {
+  color:var(--ink);
+  padding-left:.5rem
+}
+
+.method__btn {
+  margin-top:2.5rem
+}
+
+@media(max-width:900px) {
+  .intro__grid {
+    grid-template-columns:1fr
+  }
+  .services__grid {
+    grid-template-columns:repeat(2,1fr)
+  }
+  .method__grid {
+    grid-template-columns:1fr
+  }
+}
+
+@media(max-width:520px) {
+  .services__grid {
+    grid-template-columns:1fr
+  }
+}
+</style>

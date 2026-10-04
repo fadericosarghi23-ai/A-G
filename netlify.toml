@@ -1,0 +1,83 @@
+# Deploy statico su Netlify.
+# Il dominio canonico è in astro.config.mjs (SITE_URL).
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Astro 5.18 usa rolldown/vite 8: servono engine recenti
+  NODE_VERSION = "20"
+  # il lockfile generato su Windows fa saltare il binding nativo per Linux (npm#4828):
+  # su Netlify si installa fresco
+  NPM_FLAGS = "--no-package-lock"
+
+# Vecchi indirizzi del sito ag-architettura.it → pagine nuove (301, per non perdere i link già indicizzati)
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+[[redirects]]
+  from = "/progetti.html"
+  to = "/progetti/"
+  status = 301
+[[redirects]]
+  from = "/proj-akarui.html"
+  to = "/progetti/casa-akarui/"
+  status = 301
+[[redirects]]
+  from = "/proj-sole.html"
+  to = "/progetti/casa-sole/"
+  status = 301
+[[redirects]]
+  from = "/proj-glicine.html"
+  to = "/progetti/casa-del-glicine/"
+  status = 301
+[[redirects]]
+  from = "/proj-mansarda.html"
+  to = "/progetti/mansarda-b/"
+  status = 301
+[[redirects]]
+  from = "/proj-camera-gio.html"
+  to = "/progetti/camera-gio/"
+  status = 301
+[[redirects]]
+  from = "/proj-faenza.html"
+  to = "/progetti/casa-faenza/"
+  status = 301
+[[redirects]]
+  from = "/proj-lf2.html"
+  to = "/progetti/casa-lf2/"
+  status = 301
+[[redirects]]
+  from = "/proj-h.html"
+  to = "/progetti/casa-h/"
+  status = 301
+[[redirects]]
+  from = "/proj-ll.html"
+  to = "/progetti/casa-ll/"
+  status = 301
+[[redirects]]
+  from = "/proj-studioapp.html"
+  to = "/progetti/studio-app/"
+  status = 301
+[[redirects]]
+  from = "/proj-zoe.html"
+  to = "/progetti/zoe-cafe-bistrot/"
+  status = 301
+# le quattro pagine servizio ora sono card della pagina Metodo
+[[redirects]]
+  from = "/mini-call.html"
+  to = "/metodo/"
+  status = 301
+[[redirects]]
+  from = "/chiedi-ag.html"
+  to = "/metodo/"
+  status = 301
+[[redirects]]
+  from = "/la-stanza-che-vorrei.html"
+  to = "/metodo/"
+  status = 301
+[[redirects]]
+  from = "/casa-senza-pensieri.html"
+  to = "/metodo/"
+  status = 301

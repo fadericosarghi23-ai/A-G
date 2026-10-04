@@ -1,0 +1,171 @@
+---
+/**
+ * Footer — CTA + 4 colonne (studio, contatti, social, naviga) + riga legale.
+ * Recapiti, social e P.IVA di A+G Architettura.
+ */
+import { daRendere } from '../lib/testo';
+
+const year = new Date().getFullYear();
+
+// Orari di ricevimento: compilare col dato del cliente.
+// (il sito attuale non li pubblica: in produzione la riga non viene resa)
+const orari = '[[DA COMPILARE: orari di ricevimento]]';
+// P.IVA dalla privacy policy del sito attuale (titolare: Arch. Angela Culletta).
+const piva = '06368110828';
+---
+
+<footer class="ft on-dark">
+  <div class="container">
+    <div class="ft__cta">
+      <p class="eyebrow">Contattaci</p>
+      <a class="ft__big" href="/contatti/">Le distanze<br />non ci spaventano<span class="ft__arrow">&#8599;</span></a>
+    </div>
+
+    <div class="ft__grid" data-stagger>
+      <div class="ft__col">
+        <h3 class="ft__h">Lo studio</h3>
+        {/* [[DA COMPILARE: indirizzi civici delle due sedi — il sito attuale indica solo le città]] */}
+        <p class="muted">Sedi operative a Biella e Vercelli<br />In tutto il Piemonte</p>
+        {daRendere(orari) && <p class="ft__note">{orari}</p>}
+      </div>
+
+      <div class="ft__col">
+        <h3 class="ft__h">Contatti</h3>
+        <a class="ft__phone" href="tel:+393289063208">+39 328 9063208</a>
+        <a class="ft__mail tlink" href="tel:+393398838558">+39 339 8838558</a>
+        <a class="ft__mail tlink" href="mailto:info@ag-architettura.it">info@ag-architettura.it</a>
+      </div>
+
+      <div class="ft__col">
+        <h3 class="ft__h">Seguici</h3>
+        <a class="ft__mail tlink" href="https://www.instagram.com/ag_architettura" target="_blank" rel="noopener">Instagram</a>
+        <a class="ft__mail tlink" href="https://www.facebook.com/AGarchitettura" target="_blank" rel="noopener">Facebook</a>
+        <a class="ft__mail tlink" href="https://www.pinterest.it/AG_architettura" target="_blank" rel="noopener">Pinterest</a>
+      </div>
+
+      <div class="ft__col">
+        <h3 class="ft__h">Naviga</h3>
+        <a class="ft__mail tlink" href="/progetti/">Progetti</a>
+        <a class="ft__mail tlink" href="/ambiti/">Servizi</a>
+        <a class="ft__mail tlink" href="/metodo/">Metodo</a>
+        <a class="ft__mail tlink" href="/studio/">Chi siamo</a>
+        <a class="ft__mail tlink" href="/contatti/">Contatti</a>
+      </div>
+    </div>
+
+    <div class="ft__base">
+      <p>&copy; {year} A+G Architettura</p>
+      <p class="muted">Architettura e interior design · Biella e Vercelli</p>
+      {piva && <p class="muted">P.IVA {piva}</p>}
+    </div>
+  </div>
+</footer>
+
+<style>
+.ft {
+  padding-block:clamp(3.5rem,8vw,6rem) 2.5rem
+}
+
+.ft__cta {
+  border-bottom:1px solid rgba(244,242,238,.15);
+  padding-bottom:clamp(2rem,5vw,3.5rem);
+  margin-bottom:clamp(2.5rem,5vw,4rem)
+}
+
+.ft__big {
+  display:block;
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:clamp(2.8rem,11vw,8rem);
+  line-height:.95;
+  letter-spacing:-.03em;
+  color:var(--on-dark);
+  text-transform:uppercase;
+  position:relative;
+  transition:color .4s var(--ease)
+}
+
+.ft__big:hover {
+  color:var(--accent-on-dark)
+}
+
+.ft__arrow {
+  font-size:.5em;
+  vertical-align:super;
+  margin-left:.1em;
+  display:inline-block;
+  transition:transform .4s var(--ease)
+}
+
+.ft__big:hover .ft__arrow {
+  transform:translate(.15em,-.15em)
+}
+
+.ft__grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:2.5rem 2rem
+}
+
+.ft__h {
+  font-family:var(--font-body);
+  font-size:.74rem;
+  font-weight:600;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--on-dark-muted);
+  margin-bottom:1.1rem
+}
+
+.ft__col p {
+  margin:0 0 .5rem
+}
+
+.ft__col a {
+  display:block;
+  color:var(--on-dark);
+  margin-bottom:.55rem;
+  font-size:.95rem
+}
+
+.ft__phone {
+  font-family:var(--font-display);
+  font-size:1.5rem;
+  font-weight:500;
+  margin-bottom:.8rem!important
+}
+
+.ft__note {
+  font-size:.85rem;
+  color:var(--on-dark-muted);
+  margin-top:.8rem
+}
+
+.ft__base {
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:.5rem;
+  margin-top:clamp(2.5rem,5vw,4rem);
+  padding-top:1.5rem;
+  border-top:1px solid rgba(244,242,238,.15);
+  font-size:.82rem;
+  color:var(--on-dark-muted)
+}
+
+.ft__base p {
+  margin:0
+}
+
+@media(max-width:780px) {
+  .ft__grid {
+    grid-template-columns:repeat(2,1fr)
+  }
+}
+
+@media(max-width:460px) {
+  .ft__grid {
+    grid-template-columns:1fr
+  }
+}
+</style>

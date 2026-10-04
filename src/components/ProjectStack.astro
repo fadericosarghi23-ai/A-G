@@ -1,0 +1,333 @@
+---
+/**
+ * ProjectStack — mazzo di carte progetto trascinabile (home).
+ * Il pannello di sinistra viene riempito via JS leggendo i data-* delle carte:
+ * non togliere né rinominare gli attributi data-*, l'animazione ci si appoggia.
+ */
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { testo } from '../lib/testo';
+
+interface Props {
+  projects: CollectionEntry<'progetti'>[];
+}
+const { projects } = Astro.props;
+const total = String(projects.length).padStart(2, '0');
+---
+
+<section class="pstack">
+  <div class="container pstack__grid">
+    <div class="pstack__info">
+      <p class="eyebrow" data-reveal>Progetti <span class="eyebrow--muted">selezionati</span></p>
+
+      <div class="pstack__panel" data-panel>
+        <!-- Questi nodi sono riempiti dallo script del mazzo: lasciarli vuoti. -->
+        <p class="pstack__cat" data-f-cat></p>
+        <h2 class="pstack__title" data-f-title></h2>
+        <p class="pstack__excerpt" data-f-excerpt></p>
+        <dl class="pstack__meta">
+          <div>
+            <dt>Ambito</dt>
+            <dd data-f-kind></dd>
+          </div>
+          <div class="pstack__meta-loc">
+            <dt>Luogo</dt>
+            <dd data-f-loc></dd>
+          </div>
+          <div>
+            <dt>Anno</dt>
+            <dd data-f-year></dd>
+          </div>
+        </dl>
+        <a class="tlink pstack__link" data-f-link href="/progetti/">Scopri il progetto &#8599;</a>
+      </div>
+
+      <div class="pstack__foot">
+        <div class="pstack__counter"><span data-counter>01</span> <i>/</i> <span>{total}</span></div>
+        <div class="pstack__ctrls">
+          <button type="button" class="pstack__btn" data-prev aria-label="Progetto precedente">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 18l-6-6 6-6"></path></svg>
+          </button>
+          <button type="button" class="pstack__btn" data-next aria-label="Progetto successivo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18l6-6-6-6"></path></svg>
+          </button>
+        </div>
+        <a class="tlink pstack__all" href="/progetti/">Tutti i progetti &#8599;</a>
+      </div>
+    </div>
+
+    <div class="pstack__stage" data-reveal>
+      <div class="pstack__deck" data-deck>
+        {projects.map((p, i) => (
+          <article
+            class="pcard"
+            data-i={i}
+            data-cat={p.data.categoryLabel}
+            data-title={p.data.title}
+            data-excerpt={testo(p.data.excerpt)}
+            data-kind={p.data.credits}
+            data-loc={p.data.location || '—'}
+            data-year={p.data.year}
+            data-href={`/progetti/${p.id}/`}
+          >
+            <Image
+              src={p.data.cover}
+              alt={p.data.title}
+              widths={[500, 800, 1100]}
+              sizes="(min-width:900px) 32vw, 80vw"
+              loading="eager"
+              draggable={false}
+              class="pcard__img"
+            />
+            <span class="pcard__tag" data-c-cat></span>
+          </article>
+        ))}
+      </div>
+      <p class="pstack__hint" data-hint>Trascina o clicca la foto per scorrere</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Mazzo di carte: drag, click, frecce e tastiera. Codice invariato rispetto al sito di partenza.
+const q="transform .6s cubic-bezier(0.34, 1.4, 0.5, 1), opacity .5s ease";const y=window.matchMedia("(prefers-reduced-motion: reduce)").matches;document.querySelectorAll(".pstack").forEach(l=>{const d=l.querySelector("[data-deck]");if(!d)return;const i=Array.from(d.querySelectorAll(".pcard")),x=i.length;if(x===0)return;const h=l.querySelector("[data-panel]"),k=l.querySelector("[data-counter]"),p=i.map(()=>y?0:Math.random()*6-3);let e=i.map((t,n)=>n).reverse();const c=(t,n,a=!1)=>{const r=l.querySelector(`[data-f-${t}]`);r&&(a?r.setAttribute("href",n):r.textContent=n)},f=(t=!0)=>{e.forEach((n,a)=>{const r=i[n],o=e.length-1-a,b=o===0;r.style.transition=t?q:"none",r.style.zIndex=String(a+1),r.style.transform=`translate(-50%, -50%) translateY(${o*-14}px) scale(${1-o*.05}) rotateZ(${o*-3+p[n]}deg)`,r.style.opacity=String(Math.max(0,1-o*.18)),r.style.pointerEvents=b?"auto":"none",r.classList.toggle("is-top",b)})},m=()=>{const t=e[e.length-1],a=i[t].dataset;h&&!y?(h.classList.add("is-swapping"),setTimeout(()=>{E(a),h.classList.remove("is-swapping")},200)):E(a),i.forEach(r=>{const o=r.querySelector("[data-c-cat]");o&&(o.textContent=r.dataset.cat||"")}),k&&(k.textContent=String(t%x+1).padStart(2,"0"))},E=t=>{c("cat",t.cat||""),c("title",t.title||""),c("excerpt",t.excerpt||""),c("kind",t.kind||""),c("loc",t.loc||""),c("year",t.year||""),c("link",t.href||"/progetti/",!0)},u=t=>{p[t]=y?0:Math.random()*6-3,e=[t,...e.filter(n=>n!==t)],f(),m()},L=()=>{const t=e[0];e=[...e.slice(1),t],p[t]=y?0:Math.random()*6-3,f(),m()};l.querySelector("[data-next]")?.addEventListener("click",()=>u(e[e.length-1])),l.querySelector("[data-prev]")?.addEventListener("click",L);let g=!1,S=!1,v=0,w=0,s=null;const M=t=>{const n=e[e.length-1];s=i[n],!(!s.contains(t.target)&&s!==t.target)&&(g=!0,S=!1,v=t.clientX,w=t.clientY,s.style.transition="none",s.classList.add("is-dragging"),s.setPointerCapture?.(t.pointerId))},A=t=>{if(!g||!s)return;const n=t.clientX-v,a=t.clientY-w;(Math.abs(n)>4||Math.abs(a)>4)&&(S=!0),s.style.transform=`translate(-50%, -50%) translate(${n}px, ${a}px) rotateZ(${n*.05+p[e[e.length-1]]}deg)`},I=t=>{if(!g||!s)return;g=!1,s.classList.remove("is-dragging");const n=t.clientX-v,a=t.clientY-w,r=e[e.length-1];Math.hypot(n,a)>150?u(r):S?(s.style.transition=q,f()):u(r),s=null};d.addEventListener("pointerdown",M),window.addEventListener("pointermove",A),window.addEventListener("pointerup",I),window.addEventListener("pointercancel",I),d.setAttribute("tabindex","0"),d.addEventListener("keydown",t=>{(t.key==="ArrowRight"||t.key==="Enter"||t.key===" ")&&(t.preventDefault(),u(e[e.length-1])),t.key==="ArrowLeft"&&(t.preventDefault(),L())}),f(!1),m()});</script>
+
+<style>
+.pstack {
+  min-height:100svh;
+  display:flex;
+  align-items:center;
+  padding-block:clamp(3rem,6vh,4.5rem);
+  background:var(--bg)
+}
+
+.pstack__grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:clamp(2rem,6vw,6rem);
+  align-items:center;
+  width:100%
+}
+
+.pstack__info {
+  display:flex;
+  flex-direction:column
+}
+
+.pstack__panel {
+  margin-top:1.6rem
+}
+
+.pstack__cat {
+  font-size:.74rem;
+  font-weight:600;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--accent);
+  margin:0 0 1rem;
+  min-height:1em
+}
+
+.pstack__title {
+  font-size:clamp(2rem,4.2vw,3.4rem);
+  letter-spacing:-.025em;
+  line-height:1.02
+}
+
+.pstack__excerpt {
+  font-size:1.02rem;
+  line-height:1.6;
+  color:var(--muted);
+  margin:1.1rem 0 1.6rem;
+  max-width:34rem;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden
+}
+
+.pstack__meta {
+  display:flex;
+  gap:2rem;
+  margin:0 0 1.6rem;
+  flex-wrap:wrap
+}
+
+.pstack__meta dt {
+  font-size:.68rem;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:.25rem
+}
+
+.pstack__meta dd {
+  margin:0;
+  font-size:.98rem;
+  font-weight:500
+}
+
+.pstack__link {
+  display:inline-block;
+  font-size:.95rem
+}
+
+.pstack__panel {
+  transition:opacity .35s var(--ease),transform .35s var(--ease)
+}
+
+.pstack__panel.is-swapping {
+  opacity:0;
+  transform:translateY(8px)
+}
+
+.pstack__foot {
+  display:flex;
+  align-items:center;
+  gap:1.4rem;
+  margin-top:2.4rem;
+  padding-top:1.4rem;
+  border-top:1px solid var(--line)
+}
+
+.pstack__counter {
+  font-family:var(--font-display);
+  font-size:1rem;
+  font-weight:500;
+  letter-spacing:.02em
+}
+
+.pstack__counter span:first-child {
+  font-size:1.5rem;
+  color:var(--accent)
+}
+
+.pstack__counter i {
+  color:var(--line-strong);
+  font-style:normal;
+  margin:0 .2rem
+}
+
+.pstack__ctrls {
+  display:flex;
+  gap:.5rem
+}
+
+.pstack__btn {
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+  background:transparent;
+  border:1px solid var(--line-strong);
+  color:var(--ink);
+  transition:all .3s var(--ease)
+}
+
+.pstack__btn:hover {
+  border-color:var(--ink);
+  background:var(--ink);
+  color:var(--on-dark)
+}
+
+.pstack__all {
+  margin-left:auto;
+  font-size:.9rem
+}
+
+.pstack__stage {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center
+}
+
+.pstack__deck {
+  position:relative;
+  width:clamp(260px,30vw,400px);
+  aspect-ratio:4 / 5;
+  perspective:1200px;
+  touch-action:pan-y
+}
+
+.pcard {
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:100%;
+  height:100%;
+  transform:translate(-50%,-50%);
+  transform-origin:center;
+  will-change:transform,opacity;
+  overflow:hidden;
+  background:var(--surface);
+  box-shadow:0 30px 60px -25px #11111173,0 8px 20px -12px #1111114d;
+  user-select:none;
+  -webkit-user-select:none
+}
+
+.pcard.is-top {
+  cursor:grab
+}
+
+.pcard.is-dragging {
+  cursor:grabbing
+}
+
+.pcard__img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  pointer-events:none
+}
+
+.pcard__tag {
+  position:absolute;
+  left:1rem;
+  bottom:1rem;
+  z-index:2;
+  background:#111111d1;
+  color:var(--on-dark);
+  backdrop-filter:blur(4px);
+  font-size:.66rem;
+  font-weight:600;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  padding:.4rem .7rem;
+  opacity:0;
+  transition:opacity .3s var(--ease)
+}
+
+.pcard.is-top .pcard__tag {
+  opacity:1
+}
+
+.pstack__hint {
+  margin-top:2.2rem;
+  font-size:.82rem;
+  color:var(--muted);
+  letter-spacing:.02em
+}
+
+@media(max-width:900px) {
+  .pstack {
+    min-height:0;
+    padding-block:clamp(3.5rem,8vw,5rem)
+  }
+  .pstack__grid {
+    grid-template-columns:1fr;
+    gap:2.5rem
+  }
+  .pstack__stage {
+    order:-1
+  }
+  .pstack__deck {
+    width:min(78vw,320px)
+  }
+  .pstack__foot {
+    flex-wrap:wrap
+  }
+}
+</style>
